@@ -41,6 +41,8 @@ export default function BasicDetailsForm({ partner, states, districts, talukas, 
         spoc_mobile: partner?.spoc_mobile ?? '',
         authorized_person_name: partner?.authorized_person_name ?? '',
         authorized_person_mobile: partner?.authorized_person_mobile ?? '',
+        gst_number: partner?.bank_detail?.gst_number ?? '',
+        pan_number: partner?.bank_detail?.pan_number ?? '',
         status: partner?.status ?? true,
     });
 
@@ -232,6 +234,23 @@ export default function BasicDetailsForm({ partner, states, districts, talukas, 
                     <Label htmlFor="password">Password {isEdit && '(optional)'}</Label>
                     <Input id="password" type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} required={!isEdit} />
                     <InputError message={errors.password} />
+                </div>
+            </div>
+
+            {/* GST and PAN Section */}
+            <div className="border-t pt-6">
+                <h3 className="text-lg font-medium mb-4">Tax Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="gst_number">GST Number</Label>
+                        <Input id="gst_number" value={data.gst_number} onChange={(e) => setData('gst_number', e.target.value)} />
+                        <InputError message={errors.gst_number} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="pan_number">PAN Number</Label>
+                        <Input id="pan_number" value={data.pan_number} onChange={(e) => setData('pan_number', e.target.value)} />
+                        <InputError message={errors.pan_number} />
+                    </div>
                 </div>
             </div>
             <div className="flex justify-end gap-2 mt-4">

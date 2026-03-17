@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -8,7 +9,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 export function DeleteDialog({
     onConfirm,
@@ -33,8 +35,13 @@ export function DeleteDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                    {triggerLabel}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    title={triggerLabel}
+                >
+                    <Trash2 className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
             <DialogContent>

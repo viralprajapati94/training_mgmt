@@ -28,6 +28,8 @@ class TrainingPartner extends Model
         'authorized_person_name',
         'authorized_person_mobile',
         'status',
+        'gst_number',
+        'pan_number',
     ];
 
     protected $casts = [

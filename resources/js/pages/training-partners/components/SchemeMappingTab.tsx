@@ -15,6 +15,8 @@ type Props = {
 };
 
 export default function SchemeMappingTab({ partnerId, initialSchemes = [], states, schemes }: Props) {
+    console.log('schemes', schemes);
+    console.log('initialSchemesss', initialSchemes);
     const { data, setData, post, processing } = useForm({
         schemes: initialSchemes.length > 0 ? initialSchemes : [
             { state_id: null, scheme_id: null, approval_date: '', expiry_date: null }
@@ -25,7 +27,7 @@ export default function SchemeMappingTab({ partnerId, initialSchemes = [], state
     const schemeOptions = schemes.map((s) => ({ value: s.id, label: s.name }));
 
     const addScheme = () => {
-        setData('schemes', [
+        setData('schemes', [    
             ...data.schemes,
             { state_id: null, scheme_id: null, approval_date: '', expiry_date: null },
         ]);
@@ -47,6 +49,15 @@ export default function SchemeMappingTab({ partnerId, initialSchemes = [], state
         post(`/admin/training-partners/${partnerId}/scheme-mapping?next_tab=bank`, {
             preserveScroll: true,
         });
+    };
+
+    const formatDateForInput = (date: string | null) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     return (
@@ -108,7 +119,7 @@ export default function SchemeMappingTab({ partnerId, initialSchemes = [], state
                                 <td className="px-4 py-2 align-top">
                                     <Input
                                         type="date"
-                                        value={scheme.approval_date}
+                                        value={formatDateForInput(scheme.approval_date)}
                                         onChange={(e) => updateScheme(idx, { approval_date: e.target.value })}
                                         required
                                     />
@@ -116,7 +127,7 @@ export default function SchemeMappingTab({ partnerId, initialSchemes = [], state
                                 <td className="px-4 py-2 align-top">
                                     <Input
                                         type="date"
-                                        value={scheme.expiry_date ?? ''}
+                                        value={formatDateForInput(scheme.expiry_date || '')}
                                         onChange={(e) => updateScheme(idx, { expiry_date: e.target.value || null })}
                                     />
                                 </td>

@@ -9,14 +9,22 @@ import Select from 'react-select';
 export default function ProjectDetailsForm({ allocation, schemes, assessmentBodies, projectTypes }: any) {
     const isEdit = Boolean(allocation?.id);
 
+    // Helper function to format date for HTML date input
+    const formatDateForInput = (dateString: string | null | undefined) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+    };
+
     const { data, setData, post, put, processing, errors } = useForm({
         work_order_no: allocation?.work_order_no ?? '',
         scheme_id: allocation?.scheme_id ?? '',
         project_type: allocation?.project_type ?? '',
         assessment_body_id: allocation?.assessment_body_id ?? '',
-        project_duration_from: allocation?.project_duration_from ?? '',
-        project_duration_to: allocation?.project_duration_to ?? '',
-        agreement_date: allocation?.agreement_date ?? '',
+        project_duration_from: formatDateForInput(allocation?.project_duration_from),
+        project_duration_to: formatDateForInput(allocation?.project_duration_to),
+        agreement_date: formatDateForInput(allocation?.agreement_date),
+        implementing_organisation_name: allocation?.implementing_organisation_name ?? 'Gujarat Skill Development Mission',
     });
 
     const onSubmit = (e: FormEvent) => {
@@ -76,7 +84,13 @@ export default function ProjectDetailsForm({ allocation, schemes, assessmentBodi
                 </div>
                 <div className="space-y-2">
                     <Label>Implementing Organisation Name: *</Label>
-                    <Input value="Gujarat Skill Development Mission" readOnly className="bg-muted" />
+                    <Input 
+                        type="text" 
+                        value={data.implementing_organisation_name} 
+                        onChange={(e) => setData('implementing_organisation_name', e.target.value)}
+                        required
+                    />
+                    <InputError message={errors.implementing_organisation_name} />
                 </div>
                 <div className="space-y-2">
                     <Label>Assessment Body: *</Label>

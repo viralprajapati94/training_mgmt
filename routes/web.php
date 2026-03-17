@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SchemeController;
 use App\Http\Controllers\Admin\SectorController;
 use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\TalukaController;
+use App\Http\Controllers\Admin\ProjectTypeController;
 use App\Http\Controllers\Masters\DocumentMasterController;
 use App\Http\Controllers\TrainingPartner\TrainingPartnerController;
 
@@ -18,6 +19,11 @@ Route::inertia('/', 'welcome', [
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+});
+
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+    return 'Storage link created!';
 });
 
 Route::middleware(['auth', 'role:admin'])
@@ -30,6 +36,8 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('schemes', SchemeController::class);
         Route::resource('sectors', SectorController::class);
         Route::resource('job-roles', JobRoleController::class);
+        Route::post('/job-roles/{job_role}/upload-syllabus', [JobRoleController::class, 'uploadSyllabus'])->name('job-roles.upload-syllabus');
+        Route::resource('project-types', ProjectTypeController::class);
 
         Route::prefix('masters')->name('masters.')->group(function () {
             Route::resource('document-master', DocumentMasterController::class)->parameters([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\TrainingPartner;
 use App\Http\Controllers\Controller;
 use App\Models\AssessmentBody;
 use App\Models\JobRole;
+use App\Models\ProjectType;
 use App\Models\Scheme;
 use App\Models\Sector;
 use App\Models\TargetAllocation;
@@ -39,11 +40,12 @@ class TargetAllocationController extends Controller
         $validated = $request->validate([
             'work_order_no' => 'required|string|max:255',
             'scheme_id' => 'required|exists:schemes,id',
-            'project_type' => 'required|string|max:255',
+            'project_type' => 'required|exists:project_types,type',
             'assessment_body_id' => 'required|exists:assessment_bodies,id',
             'project_duration_from' => 'required|date',
             'project_duration_to' => 'required|date|after_or_equal:project_duration_from',
             'agreement_date' => 'required|date',
+            'implementing_organisation_name' => 'required|string|max:255',
         ]);
 
         $allocation = TargetAllocation::create(array_merge($validated, [
@@ -149,11 +151,12 @@ class TargetAllocationController extends Controller
         $validated = $request->validate([
             'work_order_no' => 'required|string|max:255',
             'scheme_id' => 'required|exists:schemes,id',
-            'project_type' => 'required|string|max:255',
+            'project_type' => 'required|exists:project_types,type',
             'assessment_body_id' => 'required|exists:assessment_bodies,id',
             'project_duration_from' => 'required|date',
             'project_duration_to' => 'required|date|after_or_equal:project_duration_from',
             'agreement_date' => 'required|date',
+            'implementing_organisation_name' => 'required|string|max:255',
         ]);
 
         $target_allocation->update($validated);
@@ -194,11 +197,7 @@ class TargetAllocationController extends Controller
             'assessmentBodies' => AssessmentBody::select('id', 'name')->where('status', true)->get(),
             'sectors' => Sector::select('id', 'name')->where('status', true)->get(),
             'jobRoles' => JobRole::select('id', 'name', 'sector_id', 'qp_code', 'nsqf_level', 'training_hours')->where('status', true)->get(),
-            'projectTypes' => [
-                ['value' => 'Govt Funded', 'label' => 'Govt Funded'],
-                ['value' => 'CSR', 'label' => 'CSR'],
-                ['value' => 'Self Paid', 'label' => 'Self Paid'],
-            ],
+            'projectTypes' => ProjectType::select('id', 'type as label', 'type as value')->where('status', true)->get(),
         ];
     }
 }

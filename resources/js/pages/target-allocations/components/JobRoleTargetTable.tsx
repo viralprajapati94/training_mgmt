@@ -6,6 +6,18 @@ import { Trash2 } from 'lucide-react';
 import Select from 'react-select';
 import InputError from '@/components/input-error';
 
+// Custom styles for react-select to ensure proper z-index
+const selectStyles = {
+    menu: (provided: any) => ({
+        ...provided,
+        zIndex: 50,
+    }),
+    menuPortal: (provided: any) => ({
+        ...provided,
+        zIndex: 50,
+    }),
+};
+
 export default function JobRoleTargetTable({ allocationId, jobRolesTargets, sectors, jobRoles }: any) {
     const { data, setData, post, processing, errors, reset } = useForm({
         sector_id: '',
@@ -78,6 +90,8 @@ export default function JobRoleTargetTable({ allocationId, jobRolesTargets, sect
                                         className="react-select-container text-xs"
                                         classNamePrefix="react-select"
                                         placeholder="--Select--"
+                                        styles={selectStyles}
+                                        menuPortalTarget={document.body}
                                     />
                                     <InputError message={errors.sector_id} className="mt-1" />
                                 </td>
@@ -90,6 +104,8 @@ export default function JobRoleTargetTable({ allocationId, jobRolesTargets, sect
                                         classNamePrefix="react-select"
                                         placeholder="--Select--"
                                         isDisabled={!data.sector_id}
+                                        styles={selectStyles}
+                                        menuPortalTarget={document.body}
                                     />
                                     <InputError message={errors.job_role_id} className="mt-1" />
                                 </td>

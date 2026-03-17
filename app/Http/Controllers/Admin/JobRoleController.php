@@ -84,36 +84,48 @@ class JobRoleController extends Controller
     public function update(Request $request, JobRole $jobRole): RedirectResponse
     {
         $data = $request->validate([
-            'sector_id' => ['required', 'exists:sectors,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'qp_code' => ['nullable', 'string', 'max:255'],
-            'qp_version' => ['nullable', 'string', 'max:255'],
-            'nsqf_level' => ['nullable', 'string', 'max:255'],
-            'category' => ['nullable', 'string', 'max:255'],
-            'training_hours' => ['nullable', 'integer'],
-            'ojt_hours' => ['nullable', 'integer'],
-            'total_hours' => ['nullable', 'integer'],
-            'cost_per_hour' => ['nullable', 'numeric'],
-            'expiry_date' => ['nullable', 'date'],
-            'syllabus_file' => ['nullable', 'file', 'max:4096'],
+            'sector_id' => ['sometimes','required','exists:sectors,id'],
+            'name' => ['sometimes','required','string','max:255'],
+            'qp_code' => ['nullable','string','max:255'],
+            'qp_version' => ['nullable','string','max:255'],
+            'nsqf_level' => ['nullable','string','max:255'],
+            'category' => ['nullable','string','max:255'],
+            'training_hours' => ['nullable','integer'],
+            'ojt_hours' => ['nullable','integer'],
+            'total_hours' => ['nullable','integer'],
+            'cost_per_hour' => ['nullable','numeric'],
+            'expiry_date' => ['nullable','date'],
+            'syllabus_file' => ['nullable','file','max:4096'],
             'status' => ['boolean'],
         ]);
 
         $syllabusPath = $jobRole->syllabus_file;
+
         if ($request->hasFile('syllabus_file')) {
             if ($jobRole->syllabus_file) {
                 Storage::disk('public')->delete($jobRole->syllabus_file);
             }
-            $syllabusPath = $request->file('syllabus_file')->store('job_roles', 'public');
-        }
 
+            $syllabusPath = $request->file('syllabus_file')->store('job_roles','public');
+        }
+        
         $jobRole->update([
-            ...collect($data)->except('syllabus_file')->toArray(),
+            'sector_id' => $request['sector_id'],
+            'name' => $request['name'],
+            'qp_code' => $request['qp_code'],
+            'qp_version' => $request['qp_version'],
+            'nsqf_level' => $request['nsqf_level'],
+            'category' => $request['category'],
+            'training_hours' => $request['training_hours'],
+            'ojt_hours' => $request['ojt_hours'],
+            'total_hours' => $request['total_hours'],
+            'cost_per_hour' => $request['cost_per_hour'],
+            'expiry_date' => $request['expiry_date'],
             'syllabus_file' => $syllabusPath,
-            'status' => $data['status'] ?? true,
+            'status' => $request->boolean('status'),
         ]);
 
-        return to_route('job-roles.index')->with('success', 'Job Role updated successfully.');
+        return to_route('job-roles.index')->with('success','Job Role updated successfully.');
     }
 
     public function destroy(JobRole $jobRole): RedirectResponse
@@ -125,5 +137,21 @@ class JobRoleController extends Controller
         $jobRole->delete();
 
         return back()->with('success', 'Job Role deleted successfully.');
+    }
+
+    public function uploadSyllabus(Request $request, JobRole $jobRole): RedirectResponse
+    {
+        $request->validate([
+            'syllabus_file' => ['required', 'file', 'max:4096'],
+        ]);
+
+        if ($jobRole->syllabus_file) {
+            Storage::disk('public')->delete($jobRole->syllabus_file);
+        }
+
+        $syllabusPath = $request->file('syllabus_file')->store('job_roles', 'public');
+        $jobRole->update(['syllabus_file' => $syllabusPath]);
+
+        return back()->with('success', 'Syllabus uploaded successfully.');
     }
 }

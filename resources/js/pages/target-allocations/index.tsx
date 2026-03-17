@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Plus, Eye, Edit } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types/navigation';
 
+// Helper function to format date to dd-mm-yyyy
+const formatDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+};
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Target Allocations', href: '/tp/target-allocations' },
 ];
@@ -51,9 +61,9 @@ export default function TargetAllocationsIndex({ allocations }: any) {
                                                 <td className="px-4 py-3">{allocation.scheme?.name}</td>
                                                 <td className="px-4 py-3">{allocation.project_type}</td>
                                                 <td className="px-4 py-3 text-xs">
-                                                    {allocation.project_duration_from} to {allocation.project_duration_to}
+                                                    {formatDate(allocation.project_duration_from)} to {formatDate(allocation.project_duration_to)}
                                                 </td>
-                                                <td className="px-4 py-3">{allocation.agreement_date}</td>
+                                                <td className="px-4 py-3">{formatDate(allocation.agreement_date)}</td>
                                                 <td className="px-4 py-3 text-right">
                                                     <Button variant="outline" size="sm" asChild>
                                                         <Link href={`/tp/target-allocations/${allocation.id}/edit`}>

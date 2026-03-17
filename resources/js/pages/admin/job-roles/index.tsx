@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import InputError from '@/components/input-error';
 import { DeleteDialog } from '@/components/delete-dialog';
 import Select from 'react-select';
+import { Download, Upload, Edit } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types/navigation';
 
 type Sector = { id: number; name: string };
@@ -55,6 +56,12 @@ const statusOptions = [
     { value: false, label: 'Inactive' },
 ];
 
+const categoryLevelOptions = [
+    { value: 1, label: 'Category I' },
+    { value: 2, label: 'Category II' },
+    { value: 3, label: 'Category III' },
+];
+
 export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
     const { data: searchData, setData: setSearchData } = useForm({
         search: filters.search ?? '',
@@ -63,6 +70,8 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingJobRole, setEditingJobRole] = useState<JobRole | null>(null);
+    const [isSyllabusModalOpen, setIsSyllabusModalOpen] = useState(false);
+    const [syllabusJobRole, setSyllabusJobRole] = useState<JobRole | null>(null);
 
     const { data: formData, setData: setFormData, post, put, processing, errors, reset, clearErrors } = useForm({
         sector_id: '',
@@ -79,6 +88,29 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
         syllabus_file: null as File | null,
         status: true,
     });
+
+    const { data: syllabusData, setData: setSyllabusData, post: postSyllabus, processing: syllabusProcessing } = useForm({
+        syllabus_file: null as File | null,
+    });
+
+    // Auto-calculate total hours when training_hours or ojt_hours change
+    const calculateTotalHours = (trainingHours: string, ojtHours: string) => {
+        const training = parseFloat(trainingHours) || 0;
+        const ojt = parseFloat(ojtHours) || 0;
+        return (training + ojt).toString();
+    };
+
+    const updateFormData = (field: keyof typeof formData, value: string) => {
+        setFormData(field, value);
+        
+        // Auto-calculate total hours when training_hours or ojt_hours change
+        if (field === 'training_hours' || field === 'ojt_hours') {
+            const trainingHours = field === 'training_hours' ? value : formData.training_hours;
+            const ojtHours = field === 'ojt_hours' ? value : formData.ojt_hours;
+            const total = calculateTotalHours(trainingHours, ojtHours);
+            setFormData('total_hours', total);
+        }
+    };
 
     const sectorOptions = useMemo(
         () => sectors.map((s) => ({ value: String(s.id), label: s.name })),
@@ -107,6 +139,20 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
 
     const openEditModal = (jobRole: JobRole) => {
         clearErrors();
+        const trainingHours = jobRole.training_hours?.toString() ?? '';
+        const ojtHours = jobRole.ojt_hours?.toString() ?? '';
+        const totalHours = jobRole.total_hours?.toString() ?? calculateTotalHours(trainingHours, ojtHours);
+        
+        // Format expiry date for date input
+        const formatExpiryDate = (date: string | null) => {
+            if (!date) return '';
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
         setFormData({
             sector_id: String(jobRole.sector_id),
             name: jobRole.name,
@@ -114,11 +160,11 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
             qp_version: jobRole.qp_version ?? '',
             nsqf_level: jobRole.nsqf_level ?? '',
             category: jobRole.category ?? '',
-            training_hours: jobRole.training_hours?.toString() ?? '',
-            ojt_hours: jobRole.ojt_hours?.toString() ?? '',
-            total_hours: jobRole.total_hours?.toString() ?? '',
+            training_hours: trainingHours,
+            ojt_hours: ojtHours,
+            total_hours: totalHours,
             cost_per_hour: jobRole.cost_per_hour?.toString() ?? '',
-            expiry_date: jobRole.expiry_date ?? '',
+            expiry_date: formatExpiryDate(jobRole.expiry_date ?? null),
             syllabus_file: null,
             status: jobRole.status,
         });
@@ -130,12 +176,18 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
         e.preventDefault();
         const options = {
             forceFormData: true,
-            onSuccess: () => setIsModalOpen(false),
+            onSuccess: () => {
+                setIsModalOpen(false);
+                // Clear form data after successful submission
+                reset();
+                setEditingJobRole(null);
+            },
             preserveScroll: true,
         };
 
         if (editingJobRole) {
-            put(`/admin/job-roles/${editingJobRole.id}`, options);
+            // In Laravel, PUT requests with multipart/form-data must be sent as POST with _method=PUT
+            post(`/admin/job-roles/${editingJobRole.id}?_method=PUT`, options);
         } else {
             post('/admin/job-roles', options);
         }
@@ -191,12 +243,17 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
                     </form>
 
                     <DataTable
+                        className="table-border"
                         columns={[
                             { key: 'name', label: 'Job Role' },
                             { key: 'sector', label: 'Sector' },
                             { key: 'qp', label: 'QP Code' },
                             { key: 'nsqf', label: 'NSQF' },
+                            { key: 'category', label: 'Category' },
+                            { key: 'training_hours', label: 'Training Hours' },
+                            { key: 'ojt_hours', label: 'OJT Hours' },
                             { key: 'hours', label: 'Total Hours' },
+                            { key: 'expiry_date', label: 'Expiry Date' },
                             { key: 'status', label: 'Status' },
                             { key: 'actions', label: 'Actions', className: 'text-right' },
                         ]}
@@ -207,17 +264,46 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
                                 <td className="px-4 py-3">{jobRole.sector?.name ?? '-'}</td>
                                 <td className="px-4 py-3">{jobRole.qp_code ?? '-'}</td>
                                 <td className="px-4 py-3">{jobRole.nsqf_level ?? '-'}</td>
-                                <td className="px-4 py-3">{jobRole.total_hours ?? '-'}</td>
+                                <td className="px-4 py-3">
+                                    {categoryLevelOptions.find(
+                                        (option) => String(option.value) === String(jobRole.category)
+                                    )?.label ?? '-'}
+                                </td>
+                                <td className="px-4 py-3 text-center">{jobRole.training_hours ?? '-'}</td>
+                                <td className="px-4 py-3 text-center">{jobRole.ojt_hours ?? '-'}</td>
+                                <td className="px-4 py-3 text-center">{jobRole.total_hours ?? '-'}</td>
+                                <td className="px-4 py-3 text-center">
+                                    {jobRole.expiry_date ? new Date(jobRole.expiry_date).toLocaleDateString('en-GB') : '-'}
+                                </td>
                                 <td className="px-4 py-3">
                                     <Badge variant={jobRole.status ? 'default' : 'secondary'}>
                                         {jobRole.status ? 'Active' : 'Inactive'}
                                     </Badge>
                                 </td>
-                                <td className="px-4 py-3 text-right space-x-2">
-                                    <Button variant="outline" size="sm" onClick={() => openEditModal(jobRole)}>
-                                        Edit
-                                    </Button>
-                                    <DeleteDialog onConfirm={() => handleDelete(jobRole.id)} />
+                                <td className="px-4 py-3 text-right">
+                                    <div className="flex justify-end gap-2">
+                                        {jobRole.syllabus_file && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => window.open(`/storage/${jobRole.syllabus_file}`, '_blank')}
+                                                className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                                                title="Download Syllabus"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => openEditModal(jobRole)}
+                                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                            title="Edit"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <DeleteDialog onConfirm={() => handleDelete(jobRole.id)} />
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -295,11 +381,14 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="category">Category</Label>
-                                <Input
+                                <Select
                                     id="category"
-                                    value={formData.category}
-                                    onChange={(e) => setFormData('category', e.target.value)}
-                                    placeholder="Category"
+                                    placeholder="Select category"
+                                    options={categoryLevelOptions}
+                                    value={categoryLevelOptions.find((o) => o.value === Number(formData.category)) || null}
+                                    onChange={(option) => setFormData('category', option?.value?.toString() ?? '')}
+                                    className="react-select-container z-50"
+                                    classNamePrefix="react-select"
                                 />
                                 <InputError message={errors.category} />
                             </div>
@@ -313,7 +402,7 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
                                     type="number"
                                     min="0"
                                     value={formData.training_hours}
-                                    onChange={(e) => setFormData('training_hours', e.target.value)}
+                                    onChange={(e) => updateFormData('training_hours', e.target.value)}
                                     placeholder="Training hours"
                                 />
                                 <InputError message={errors.training_hours} />
@@ -325,7 +414,7 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
                                     type="number"
                                     min="0"
                                     value={formData.ojt_hours}
-                                    onChange={(e) => setFormData('ojt_hours', e.target.value)}
+                                    onChange={(e) => updateFormData('ojt_hours', e.target.value)}
                                     placeholder="OJT hours"
                                 />
                                 <InputError message={errors.ojt_hours} />
@@ -341,7 +430,8 @@ export default function JobRolesIndex({ jobRoles, sectors, filters }: Props) {
                                     min="0"
                                     value={formData.total_hours}
                                     onChange={(e) => setFormData('total_hours', e.target.value)}
-                                    placeholder="Total hours"
+                                    placeholder="Total hours (auto-calculated)"
+                                    readOnly
                                 />
                                 <InputError message={errors.total_hours} />
                             </div>

@@ -72,10 +72,10 @@ export default function TrainingPartnersIndex({ partners, filters, states, distr
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} className="p-6">
             <Head title="Training Partners" />
-            <Card>
-                <CardContent className="space-y-4">
+            <Card className="">
+                <CardContent className="space-y-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-xl font-semibold">Training Partners</h1>
@@ -86,12 +86,16 @@ export default function TrainingPartnersIndex({ partners, filters, states, distr
                         </Button>
                     </div>
 
-                    <form onSubmit={onSearch} className="grid gap-3 md:grid-cols-[1fr,220px,220px,auto] md:items-center">
+                    {/* <form onSubmit={onSearch} className="grid gap-3 md:grid-cols-[1fr,220px,220px,auto] md:items-center"> */}
+                    <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <div className="space-y-2"> 
                         <Input
                             placeholder="Search TP ID / SIP / Name"
                             value={filterData.search}
                             onChange={(e) => setFilterData('search', e.target.value)}
                         />
+                        </div>
+                        <div className="space-y-2">
                         <Select
                             options={stateOptions}
                             value={stateOptions.find((o) => o.value === Number(filterData.state_id)) ?? null}
@@ -104,6 +108,8 @@ export default function TrainingPartnersIndex({ partners, filters, states, distr
                             placeholder="Filter by state"
                             isClearable
                         />
+                        </div>
+                        <div className="space-y-2">
                         <Select
                             options={districtOptions}
                             value={districtOptions.find((o) => o.value === Number(filterData.district_id)) ?? null}
@@ -113,6 +119,7 @@ export default function TrainingPartnersIndex({ partners, filters, states, distr
                             placeholder="Filter by district"
                             isClearable
                         />
+                        </div>
                         <div className="flex gap-2">
                             <Button type="submit">Search</Button>
                             <Button

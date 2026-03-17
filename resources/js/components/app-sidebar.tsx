@@ -28,11 +28,8 @@ const trainingPartnerNavItems: NavItem[] = [
     {
         title: 'Training Partners',
         icon: MapPin,
+        href: '/admin/training-partners',
         roles: ['admin'],
-        items: [
-            { title: 'List', href: '/admin/training-partners', roles: ['admin'] },
-            { title: 'Add Training Partner', href: '/admin/training-partners/create', roles: ['admin'] },
-        ],
     },
 ];
 
@@ -40,20 +37,14 @@ const trainingCenterNavItems: NavItem[] = [
     {
         title: 'Training Centers',
         icon: MapPin,
+        href: '/tp/training-centers',
         roles: ['training_partner'],
-        items: [
-            { title: 'List', href: '/tp/training-centers', roles: ['training_partner'] },
-            { title: 'Add Training Center', href: '/tp/training-centers/create', roles: ['training_partner'] },
-        ],
     },
     {
         title: 'Target Allocation',
         icon: BookOpen,
+        href: '/tp/target-allocations',
         roles: ['training_partner'],
-        items: [
-            { title: 'List', href: '/tp/target-allocations', roles: ['training_partner'] },
-            { title: 'New Allocation', href: '/tp/target-allocations/create', roles: ['training_partner'] },
-        ],
     },
 ];
 
@@ -70,6 +61,9 @@ const masterNavItems: NavItem[] = [
             { title: 'Schemes', href: '/admin/schemes', roles: ['admin'] },
             { title: 'Sectors', href: '/admin/sectors', roles: ['admin'] },
             { title: 'Job Roles', href: '/admin/job-roles', roles: ['admin'] },
+            { title: 'Project Types', href: '/admin/project-types', roles: ['admin'] },
+            { title: 'Documents', href: '/admin/masters/document-master', roles: ['admin'] },
+
         ],
     },
 ];

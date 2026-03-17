@@ -211,6 +211,8 @@ class TrainingPartnerController extends Controller
             'authorized_person_mobile' => ['nullable', 'string', 'max:20'],
             'password' => [$id ? 'nullable' : 'required', 'string', 'min:6'],
             'status' => ['sometimes', 'boolean'],
+            'gst_number' => ['nullable', 'string', 'max:15'],
+            'pan_number' => ['nullable', 'string', 'max:10'],
         ], [
             'password.required' => 'Password is required when creating a training partner',
         ]);
@@ -260,13 +262,7 @@ class TrainingPartnerController extends Controller
             'account_holder_name' => $data['account_holder_name'] ?? null,
             'account_number' => $data['account_number'] ?? null,
             'ifsc_code' => $data['ifsc_code'] ?? null,
-            'account_type' => $data['account_type'] ?? null,
-            'gst_number' => $data['gst_number'] ?? null,
-            'pan_number' => $data['pan_number'] ?? null,
-            'tan_number' => $data['tan_number'] ?? null,
-            'cin_number' => $data['cin_number'] ?? null,
-            'msme_number' => $data['msme_number'] ?? null,
-            'udyam_number' => $data['udyam_number'] ?? null,
+            'account_type' => $data['account_type'] ?? null,            
             'financial_year_1' => $data['financial_year_1'] ?? null,
             'financial_turnover_1' => $data['financial_turnover_1'] ?? null,
             'financial_year_2' => $data['financial_year_2'] ?? null,

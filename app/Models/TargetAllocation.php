@@ -18,6 +18,7 @@ class TargetAllocation extends Model
         'project_duration_from',
         'project_duration_to',
         'agreement_date',
+        'implementing_organisation_name',
         'status',
     ];
 
