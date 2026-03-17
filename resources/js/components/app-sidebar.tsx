@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, MapPin, Map, Server, Database } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, MapPin, Map, Server, Database, UserCheck  , Target, School } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -36,13 +36,19 @@ const trainingPartnerNavItems: NavItem[] = [
 const trainingCenterNavItems: NavItem[] = [
     {
         title: 'Training Centers',
-        icon: MapPin,
+        icon: School,
         href: '/tp/training-centers',
         roles: ['training_partner'],
     },
     {
+        title: 'Trainers',
+        icon: UserCheck  ,
+        href: '/tp/trainers',
+        roles: ['training_partner'],
+    },
+    {
         title: 'Target Allocation',
-        icon: BookOpen,
+        icon: Target,
         href: '/tp/target-allocations',
         roles: ['training_partner'],
     },

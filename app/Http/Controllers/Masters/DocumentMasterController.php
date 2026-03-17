@@ -15,7 +15,7 @@ class DocumentMasterController extends Controller
     public function index(Request $request): Response
     {
         $filters = $request->only(['search', 'role_type']);
-        $roleTypes = ['training_partner', 'training_center', 'student'];
+        $roleTypes = ['training_partner', 'training_center', 'trainer' ,'student'];
 
         $documents = DocumentMaster::query()
             ->when($filters['search'] ?? null, fn ($q, $search) => $q->where('document_name', 'like', "%{$search}%"))

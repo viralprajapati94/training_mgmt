@@ -82,6 +82,16 @@ Route::middleware(['auth', 'role:training_partner'])
             Route::post('/{target_allocation}/add-job-role', [\App\Http\Controllers\TrainingPartner\TargetAllocationController::class, 'addJobRoleTarget'])->name('addJobRoleTarget');
             Route::delete('/{target_allocation}/remove-job-role/{job_role_target_id}', [\App\Http\Controllers\TrainingPartner\TargetAllocationController::class, 'removeJobRoleTarget'])->name('removeJobRoleTarget');
         });
+
+        Route::resource('trainers', \App\Http\Controllers\TrainingPartner\TrainerController::class);
+    });
+
+
+    Route::middleware(['auth'])->prefix('locations')->name('locations.')->group(function () {
+        Route::get('/states', [\App\Http\Controllers\Api\LocationController::class, 'getStates'])->name('states');
+        Route::get('/districts', [\App\Http\Controllers\Api\LocationController::class, 'getDistricts'])->name('districts');
+        Route::get('/talukas', [\App\Http\Controllers\Api\LocationController::class, 'getTalukas'])->name('talukas');
+        Route::get('/cities', [\App\Http\Controllers\Api\LocationController::class, 'getCities'])->name('cities');
     });
 
 require __DIR__.'/settings.php';
