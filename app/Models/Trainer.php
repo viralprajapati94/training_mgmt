@@ -43,5 +43,10 @@ class Trainer extends Model
         return $this->hasMany(TrainerAddress::class);
     }
 
+    public function qualifications()
+    {
+        return $this->hasMany(TrainerQualification::class);
+    }
+
    
 }

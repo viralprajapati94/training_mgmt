@@ -6,6 +6,7 @@ import { useState } from 'react';
 import type { BreadcrumbItem } from '@/types/navigation';
 import BasicDetailsForm from './components/BasicDetailsForm';
 import CommunicationDetailsForm from './components/CommunicationDetailsForm';
+import QualificationsForm from './components/QualificationsForm';
 
 export default function TrainerEdit({ trainer, trainingCenters }: any) {
     const [activeTab, setActiveTab] = useState(
@@ -32,10 +33,13 @@ export default function TrainerEdit({ trainer, trainingCenters }: any) {
                 <Card>
                     <CardContent className="pt-6">
                         <Tabs defaultValue="basic" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+                            <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
                                 <TabsTrigger value="basic">Basic Details</TabsTrigger>
                                 <TabsTrigger value="communication">
                                     Communication
+                                </TabsTrigger>
+                                <TabsTrigger value="qualifications">
+                                    Qualifications
                                 </TabsTrigger>
                             </TabsList>
                             <div className="mt-6">
@@ -51,6 +55,16 @@ export default function TrainerEdit({ trainer, trainingCenters }: any) {
                                     <CommunicationDetailsForm
                                         trainerId={trainer.id}
                                         initialData={trainer.addresses}
+                                        onSuccess={() => {
+                                            setActiveTab('qualifications');
+                                        }}
+                                    />
+                                </TabsContent>
+
+                                <TabsContent value="qualifications" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                                    <QualificationsForm
+                                        trainerId={trainer.id}
+                                        initialData={trainer.qualifications}
                                         onSuccess={() => {
                                             window.location.href = '/tp/trainers';
                                         }}

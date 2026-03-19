@@ -113,7 +113,7 @@ class TrainerController extends Controller
             abort(403);
         }
 
-        $trainer->load(['addresses']);
+        $trainer->load(['addresses', 'qualifications']);
         
         $trainingCenters = TrainingCenter::where('tp_id', auth()->user()->training_partner_id)
             ->where('status', true)
@@ -122,6 +122,7 @@ class TrainerController extends Controller
         return Inertia::render('trainers/edit', [
             'trainer' => $trainer,
             'trainingCenters' => $trainingCenters,
+            
         ]);
     }
 
@@ -132,6 +133,98 @@ class TrainerController extends Controller
     {
         if ($trainer->tp_id !== auth()->user()->training_partner_id) {
             abort(403);
+        }
+
+        // Check if updating qualifications
+        if ($request->has('qualifications') || str_starts_with($request->path(), 'tp/trainers/'.$trainer->id.'/qualifications')) {
+            $validated = $request->validate([
+                'qualifications' => 'required|array|min:1',
+                'qualifications.*.sector_id' => 'required|exists:sectors,id',
+                'qualifications.*.job_role_id' => 'required|exists:job_roles,id',
+                'qualifications.*.training_type' => 'nullable|string|in:Online,Offline',
+                'qualifications.*.is_certified' => 'boolean',
+                'qualifications.*.certificate_number' => 'required_if:qualifications.*.is_certified,true',
+                'qualifications.*.certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'qualifications.*.existing_certificate_file' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
+            try {
+                // Get current qualification IDs to find which ones to delete
+                $currentQualificationIds = $trainer->qualifications()->pluck('id')->toArray();
+                $updatedQualificationIds = [];
+                
+                foreach ($request->file('qualifications') ?? [] as $index => $files) {
+                    if (isset($files['certificate_file'])) {
+                        $validated['qualifications'][$index]['certificate_file'] = $files['certificate_file']->store('trainers/certificates', 'public');
+                    }
+                }
+
+                foreach ($validated['qualifications'] as $index => $qualData) {
+                    $jobRole = \App\Models\JobRole::find($qualData['job_role_id']);
+                    
+                    $dataToSave = [
+                        'sector_id' => $qualData['sector_id'],
+                        'job_role_id' => $qualData['job_role_id'],
+                        'qp_code' => $jobRole->qp_code ?? null,
+                        'version' => $jobRole->qp_version ?? null,
+                        'training_type' => $qualData['training_type'] ?? null,
+                        'is_certified' => $qualData['is_certified'] ?? false,
+                        'certificate_number' => ($qualData['is_certified'] ?? false) ? $qualData['certificate_number'] : null,
+                    ];
+                    
+                    // Handle file updates
+                    if (isset($qualData['certificate_file']) && is_string($qualData['certificate_file'])) {
+                        // File was uploaded and processed in the loop above
+                        $dataToSave['certificate_file'] = $qualData['certificate_file'];
+                    } elseif (isset($qualData['existing_certificate_file']) && $qualData['existing_certificate_file']) {
+                        $dataToSave['certificate_file'] = $qualData['existing_certificate_file'];
+                    } else {
+                        $dataToSave['certificate_file'] = null;
+                    }
+                    
+                    // Clear file info if not certified
+                    if (!($qualData['is_certified'] ?? false)) {
+                        $dataToSave['certificate_file'] = null;
+                    }
+
+                    if (isset($request->qualifications[$index]['id']) && $request->qualifications[$index]['id']) {
+                        $qualId = $request->qualifications[$index]['id'];
+                        $qualification = $trainer->qualifications()->find($qualId);
+                        
+                        if ($qualification) {
+                            // If we have a new file and there was an old one, delete the old one
+                            if (isset($qualData['certificate_file']) && !is_string($qualData['certificate_file']) && $qualification->certificate_file) {
+                                Storage::disk('public')->delete($qualification->certificate_file);
+                            }
+                            
+                            $qualification->update($dataToSave);
+                            $updatedQualificationIds[] = $qualId;
+                        }
+                    } else {
+                        $newQual = $trainer->qualifications()->create($dataToSave);
+                        $updatedQualificationIds[] = $newQual->id;
+                    }
+                }
+                
+                // Delete qualifications that were removed from the form
+                $qualificationsToDelete = array_diff($currentQualificationIds, $updatedQualificationIds);
+                if (!empty($qualificationsToDelete)) {
+                    $qualsToDelete = $trainer->qualifications()->whereIn('id', $qualificationsToDelete)->get();
+                    foreach ($qualsToDelete as $qual) {
+                        if ($qual->certificate_file) {
+                            Storage::disk('public')->delete($qual->certificate_file);
+                        }
+                        $qual->delete();
+                    }
+                }
+
+                DB::commit();
+                return back()->with('success', 'Trainer qualifications updated successfully.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->with('error', 'Error updating qualifications: ' . $e->getMessage());
+            }
         }
 
         // Check if updating addresses

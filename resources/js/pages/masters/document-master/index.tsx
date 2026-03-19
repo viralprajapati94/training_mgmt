@@ -130,7 +130,7 @@ export default function DocumentMasterIndex({ documents, filters, roleTypes }: P
                         <Button onClick={openCreateModal}>Add Document</Button>
                     </div>
 
-                    <form onSubmit={onSearch} className="grid gap-3 md:grid-cols-[1fr,220px,auto] md:items-center">
+                    <form onSubmit={onSearch} className="grid gap-3 md:grid-cols-4 md:items-center">
                         <Input
                             placeholder="Search document"
                             value={searchData.search}
@@ -146,22 +146,20 @@ export default function DocumentMasterIndex({ documents, filters, roleTypes }: P
                             placeholder="Filter by role"
                             isClearable
                         />
-                        <div className="flex gap-2">
-                            <Button type="submit">Search</Button>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => {
-                                    setSearchData({ search: '', role_type: '' });
-                                    router.get('/admin/masters/document-master', {}, {
-                                        preserveScroll: true,
-                                        replace: true,
-                                    });
-                                }}
-                            >
-                                Reset
-                            </Button>
-                        </div>
+                        <Button type="submit">Search</Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                                setSearchData({ search: '', role_type: '' });
+                                router.get('/admin/masters/document-master', {}, {
+                                    preserveScroll: true,
+                                    replace: true,
+                                });
+                            }}
+                        >
+                            Reset
+                        </Button>
                     </form>
 
                     <DataTable

@@ -56,7 +56,7 @@ class DocumentMasterController extends Controller
 
     protected function validatedData(Request $request, ?int $ignoreId = null): array
     {
-        $roleTypes = ['training_partner', 'training_center', 'student'];
+        $roleTypes = ['training_partner', 'training_center', 'trainer', 'student'];
 
         $validated = $request->validate([
             'document_name' => [

@@ -84,6 +84,7 @@ Route::middleware(['auth', 'role:training_partner'])
         });
 
         Route::resource('trainers', \App\Http\Controllers\TrainingPartner\TrainerController::class);
+        Route::put('trainers/{trainer}/qualifications', [\App\Http\Controllers\TrainingPartner\TrainerController::class, 'update'])->name('trainers.qualifications.update');
     });
 
 
@@ -92,6 +93,13 @@ Route::middleware(['auth', 'role:training_partner'])
         Route::get('/districts', [\App\Http\Controllers\Api\LocationController::class, 'getDistricts'])->name('districts');
         Route::get('/talukas', [\App\Http\Controllers\Api\LocationController::class, 'getTalukas'])->name('talukas');
         Route::get('/cities', [\App\Http\Controllers\Api\LocationController::class, 'getCities'])->name('cities');
+    });
+
+
+    // Master Data routes for dependent dropdowns
+    Route::middleware(['auth'])->prefix('master-data')->name('master-data.')->group(function () {
+        Route::get('/sectors', [\App\Http\Controllers\Api\MasterDataController::class, 'getSectors'])->name('sectors');
+        Route::get('/job-roles', [\App\Http\Controllers\Api\MasterDataController::class, 'getJobRoles'])->name('job-roles');
     });
 
 require __DIR__.'/settings.php';
