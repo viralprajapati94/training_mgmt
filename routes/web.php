@@ -85,6 +85,28 @@ Route::middleware(['auth', 'role:training_partner'])
 
         Route::resource('trainers', \App\Http\Controllers\TrainingPartner\TrainerController::class);
         Route::put('trainers/{trainer}/qualifications', [\App\Http\Controllers\TrainingPartner\TrainerController::class, 'update'])->name('trainers.qualifications.update');
+        
+        // TP Batch Management
+        Route::prefix('batches')->name('batches.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'store'])->name('store');
+            Route::get('/{batch}/edit', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'edit'])->name('edit');
+            Route::put('/{batch}', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'update'])->name('update');
+            Route::delete('/{batch}', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'destroy'])->name('destroy');
+            Route::post('/{batch}/approve', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'approve'])->name('approve');
+            Route::post('/{batch}/reject', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'reject'])->name('reject');
+            Route::post('/{batch}/modify', [\App\Http\Controllers\TrainingPartner\BatchController::class, 'modify'])->name('modify');
+        });
+    });
+
+Route::middleware(['auth', 'role:training_center'])
+    ->prefix('tc')
+    ->name('tc.')
+    ->group(function () {
+        // TC Batch Management
+        Route::resource('batches', \App\Http\Controllers\TrainingCenter\BatchController::class);
+        Route::post('batches/{batch}/submit', [\App\Http\Controllers\TrainingCenter\BatchController::class, 'submit'])->name('batches.submit');
     });
 
 

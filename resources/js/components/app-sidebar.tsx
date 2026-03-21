@@ -52,6 +52,21 @@ const trainingCenterNavItems: NavItem[] = [
         href: '/tp/target-allocations',
         roles: ['training_partner'],
     },
+    {
+        title: 'Batch Approvals',
+        icon: FolderGit2,
+        href: '/tp/batches',
+        roles: ['training_partner'],
+    },
+];
+
+const tcUserNavItems: NavItem[] = [
+    {
+        title: 'Batches',
+        icon: FolderGit2,
+        href: '/tc/batches',
+        roles: ['training_center'],
+    },
 ];
 
 const masterNavItems: NavItem[] = [
@@ -84,6 +99,7 @@ export function AppSidebar() {
         ...mainNavItems,
         ...(roles.includes('admin') ? trainingPartnerNavItems : []),
         ...(roles.includes('training_partner') ? trainingCenterNavItems : []),
+        ...(roles.includes('training_center') ? tcUserNavItems : []),
         ...(roles.includes('admin') || roles.includes('training_partner') ? masterNavItems : [])
     ];
 
